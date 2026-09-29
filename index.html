@@ -113,6 +113,7 @@
     .card .icon { font-family: var(--mono); color: var(--accent-2); font-size: 13px; margin-bottom: 10px; display: block; }
 
     /* Certification */
+    .certs { display: grid; gap: 16px; }
     .cert-card {
       display: flex; gap: 20px; align-items: center;
       background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--warn);
@@ -201,6 +202,7 @@
         </p>
         <ul class="tags" aria-label="Keywords">
           <li class="cert">CEH · Certified Ethical Hacker</li>
+          <li class="cert">PSM I · Professional Scrum Master</li>
           <li>Backend Development</li>
           <li>Secure Coding</li>
           <li>Penetration Testing</li>
@@ -232,12 +234,22 @@
 
       <section id="certifications">
         <h2>Certifications</h2>
-        <div class="cert-card">
-          <div class="badge" aria-hidden="true">CEH</div>
-          <div>
-            <h3>Certified Ethical Hacker</h3>
-            <div class="issuer">EC-Council</div>
-            <p>Reconnaissance, scanning, system hacking, web application and network attacks — and how to defend against them.</p>
+        <div class="certs">
+          <div class="cert-card">
+            <div class="badge" aria-hidden="true">CEH</div>
+            <div>
+              <h3>Certified Ethical Hacker</h3>
+              <div class="issuer">EC-Council</div>
+              <p>Reconnaissance, scanning, system hacking, web application and network attacks — and how to defend against them.</p>
+            </div>
+          </div>
+          <div class="cert-card">
+            <div class="badge" aria-hidden="true">PSM</div>
+            <div>
+              <h3>Professional Scrum Master I</h3>
+              <div class="issuer">Scrum.org</div>
+              <p>Scrum framework, agile values and servant leadership — helping teams deliver value in short, iterative cycles.</p>
+            </div>
           </div>
         </div>
       </section>
