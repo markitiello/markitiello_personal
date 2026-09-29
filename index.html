@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="markitiello — sviluppatore software con la passione per la cybersecurity.">
+  <title>markitiello · Developer &amp; Security</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --surface: #121821;
+      --border: #1f2a37;
+      --text: #d7dde5;
+      --muted: #8593a3;
+      --accent: #3ddc97;
+      --accent-2: #5ab0ff;
+      --warn: #ffb454;
+      --on-accent: #06130d;
+      --mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f6f8fa;
+        --surface: #ffffff;
+        --border: #d8dee4;
+        --text: #1b2230;
+        --muted: #5b6776;
+        --accent: #0f8a5f;
+        --accent-2: #1f6feb;
+        --warn: #b35900;
+        --on-accent: #ffffff;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent-2); text-decoration: none; }
+    a:hover, a:focus-visible { text-decoration: underline; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+    .wrap { max-width: 880px; margin: 0 auto; padding: 0 20px; }
+
+    /* Header */
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: color-mix(in srgb, var(--bg) 85%, transparent);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+    header .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+    .logo { font-family: var(--mono); font-weight: 700; color: var(--text); }
+    .logo span { color: var(--accent); }
+    nav a { font-family: var(--mono); font-size: 14px; color: var(--muted); margin-left: 18px; }
+    nav a:hover { color: var(--text); }
+
+    /* Hero */
+    .hero { padding: 72px 0 48px; }
+    .terminal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      font-family: var(--mono);
+      font-size: 14px;
+    }
+    .terminal-bar { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .terminal-bar i { width: 11px; height: 11px; border-radius: 50%; background: var(--border); display: block; }
+    .terminal-body { padding: 18px 20px; }
+    .terminal-body p { margin: 0 0 6px; }
+    .prompt { color: var(--accent); }
+    .out { color: var(--muted); }
+    .cursor {
+      display: inline-block; width: 8px; height: 1.1em; vertical-align: text-bottom;
+      background: var(--accent); animation: blink 1.1s steps(1) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .cursor { animation: none; } }
+
+    h1 { font-size: clamp(32px, 6vw, 48px); line-height: 1.15; margin: 36px 0 12px; letter-spacing: -0.02em; }
+    h1 .hl { color: var(--accent); }
+    .lead { font-size: 18px; color: var(--muted); max-width: 640px; margin: 0; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; padding: 0; list-style: none; }
+    .tags li {
+      font-family: var(--mono); font-size: 13px;
+      padding: 4px 10px; border: 1px solid var(--border); border-radius: 999px; color: var(--text);
+    }
+
+    /* Sections */
+    section { padding: 48px 0; border-top: 1px solid var(--border); }
+    h2 { font-family: var(--mono); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin: 0 0 24px; }
+    h2::before { content: "// "; color: var(--muted); }
+
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px;
+      transition: border-color .2s;
+    }
+    .card:hover { border-color: var(--accent); }
+    .card h3 { margin: 0 0 8px; font-size: 17px; }
+    .card p { margin: 0; color: var(--muted); font-size: 15px; }
+    .card .icon { font-family: var(--mono); color: var(--accent-2); font-size: 13px; margin-bottom: 10px; display: block; }
+
+    .skills { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .skills h3 { font-size: 16px; margin: 0 0 12px; }
+    .skills ul { margin: 0; padding: 0; list-style: none; }
+    .skills li { font-family: var(--mono); font-size: 14px; padding: 6px 0; border-bottom: 1px dashed var(--border); display: flex; justify-content: space-between; gap: 12px; }
+    .skills li span { color: var(--muted); }
+
+    .principles { counter-reset: p; margin: 0; padding: 0; list-style: none; }
+    .principles li { counter-increment: p; display: grid; grid-template-columns: 40px 1fr; padding: 12px 0; }
+    .principles li::before { content: counter(p, decimal-leading-zero); font-family: var(--mono); color: var(--warn); }
+    .principles strong { display: block; }
+    .principles span { color: var(--muted); }
+
+    .contact { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn {
+      font-family: var(--mono); font-size: 14px;
+      padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); color: var(--text); background: var(--surface);
+    }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+    .btn:hover { text-decoration: none; border-color: var(--accent); }
+
+    footer { border-top: 1px solid var(--border); padding: 28px 0 40px; font-family: var(--mono); font-size: 13px; color: var(--muted); }
+
+    @media (max-width: 560px) {
+      nav a { margin-left: 12px; }
+      nav a.opt { display: none; }
+      .hero { padding-top: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="#top">~/<span>markitiello</span></a>
+      <nav aria-label="Navigazione principale">
+        <a href="#chi-sono">chi sono</a>
+        <a class="opt" href="#competenze">competenze</a>
+        <a href="#contatti">contatti</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <div class="wrap">
+      <div class="hero">
+        <div class="terminal" aria-hidden="true">
+          <div class="terminal-bar"><i></i><i></i><i></i></div>
+          <div class="terminal-body">
+            <p><span class="prompt">$</span> whoami</p>
+            <p class="out">markitiello — developer · security enthusiast</p>
+            <p><span class="prompt">$</span> cat focus.txt</p>
+            <p class="out">build software that works — and that is hard to break.</p>
+            <p><span class="prompt">$</span> <span class="cursor"></span></p>
+          </div>
+        </div>
+
+        <h1>Sviluppatore software<br>con la passione per la <span class="hl">cybersecurity</span>.</h1>
+        <p class="lead">
+          Progetto e scrivo software pensando fin dall'inizio a come potrebbe essere attaccato.
+          Mi piace capire i sistemi a fondo, dal codice alla rete, per renderli più solidi e sicuri.
+        </p>
+        <ul class="tags" aria-label="Parole chiave">
+          <li>Software Development</li>
+          <li>Secure Coding</li>
+          <li>Web Security</li>
+          <li>DevSecOps</li>
+          <li>CTF</li>
+        </ul>
+      </div>
+
+      <section id="chi-sono">
+        <h2>Chi sono</h2>
+        <div class="grid">
+          <article class="card">
+            <span class="icon">&lt;dev /&gt;</span>
+            <h3>Sviluppatore</h3>
+            <p>Scrivo codice pulito e manutenibile, dal backend alle interfacce web, con attenzione a test, qualità e automazione.</p>
+          </article>
+          <article class="card">
+            <span class="icon">[sec]</span>
+            <h3>Appassionato di sicurezza</h3>
+            <p>Studio vulnerabilità, tecniche di attacco e difesa. Mi alleno con CTF e laboratori per capire come ragiona un attaccante.</p>
+          </article>
+          <article class="card">
+            <span class="icon">{ ops }</span>
+            <h3>Security by design</h3>
+            <p>Porto la sicurezza dentro il ciclo di sviluppo: threat modeling, code review, gestione dei segreti e pipeline CI/CD sicure.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="competenze">
+        <h2>Competenze</h2>
+        <div class="skills">
+          <div>
+            <h3>Sviluppo</h3>
+            <ul>
+              <li>Web application <span>frontend · backend</span></li>
+              <li>API REST <span>design · integrazione</span></li>
+              <li>Database <span>SQL · NoSQL</span></li>
+              <li>Git &amp; CI/CD <span>automazione</span></li>
+              <li>Linux <span>shell · scripting</span></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Cybersecurity</h3>
+            <ul>
+              <li>OWASP Top 10 <span>web security</span></li>
+              <li>Secure coding <span>code review</span></li>
+              <li>Networking <span>TCP/IP · analisi traffico</span></li>
+              <li>Penetration testing <span>lab · CTF</span></li>
+              <li>Hardening <span>sistemi · container</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="approccio">
+        <h2>Come lavoro</h2>
+        <ol class="principles">
+          <li><div><strong>Sicurezza fin dal primo commit</strong><span>È più economico prevenire che correggere in produzione.</span></div></li>
+          <li><div><strong>Semplicità</strong><span>Meno complessità significa meno superficie d'attacco.</span></div></li>
+          <li><div><strong>Curiosità continua</strong><span>Il panorama delle minacce cambia ogni giorno, e io con lui.</span></div></li>
+        </ol>
+      </section>
+
+      <section id="contatti">
+        <h2>Contatti</h2>
+        <p class="lead" style="margin-bottom:20px">Hai un progetto, un'idea o vuoi parlare di sicurezza? Scrivimi.</p>
+        <div class="contact">
+          <a class="btn primary" href="https://github.com/markitiello" rel="noopener noreferrer" target="_blank">GitHub →</a>
+          <!-- Aggiungi qui i tuoi contatti, ad esempio: -->
+          <!-- <a class="btn" href="mailto:tua@email.it">Email</a> -->
+          <!-- <a class="btn" href="https://www.linkedin.com/in/tuo-profilo" rel="noopener noreferrer" target="_blank">LinkedIn</a> -->
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">© <span>2026</span> markitiello · pagina statica, zero JavaScript, zero tracker.</div>
+  </footer>
+</body>
+</html>
