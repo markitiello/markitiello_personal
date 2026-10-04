@@ -1,0 +1,123 @@
+name: Deploy
+
+# Uploads the site with lftp over FTPS (FTP + TLS, default) or SFTP.
+# Choose the protocol with the repository variable DEPLOY_PROTOCOL: "ftps" or "sftp".
+# Shared hosting that only allows SSH from whitelisted IPs (e.g. Serverplan)
+# needs FTPS, because GitHub-hosted runners get a different IP on every run.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    env:
+      DEPLOY_PROTOCOL: ${{ vars.DEPLOY_PROTOCOL || 'ftps' }}
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_REMOTE_DIR: ${{ secrets.DEPLOY_REMOTE_DIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Check configuration
+        env:
+          HAS_PASSWORD: ${{ secrets.DEPLOY_PASSWORD != '' }}
+          HAS_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY != '' }}
+          HAS_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS != '' }}
+        run: |
+          missing=0
+          for v in DEPLOY_HOST DEPLOY_USER DEPLOY_REMOTE_DIR; do
+            if [ -z "${!v}" ]; then echo "::error::Missing secret $v"; missing=1; fi
+          done
+          case "$DEPLOY_PROTOCOL" in
+            ftps)
+              if [ "$HAS_PASSWORD" != "true" ]; then echo "::error::Missing secret DEPLOY_PASSWORD"; missing=1; fi
+              ;;
+            sftp)
+              if [ "$HAS_KNOWN_HOSTS" != "true" ]; then echo "::error::Missing secret DEPLOY_KNOWN_HOSTS"; missing=1; fi
+              if [ "$HAS_SSH_KEY" != "true" ] && [ "$HAS_PASSWORD" != "true" ]; then
+                echo "::error::Set DEPLOY_SSH_KEY (recommended) or DEPLOY_PASSWORD"; missing=1
+              fi
+              ;;
+            *)
+              echo "::error::DEPLOY_PROTOCOL must be 'ftps' or 'sftp', got '$DEPLOY_PROTOCOL'"; missing=1
+              ;;
+          esac
+          exit $missing
+
+      - name: Prepare site
+        # Only public files are uploaded: never .git, .github or other repo files.
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+
+      - name: Install lftp
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      - name: Configure SSH
+        if: env.DEPLOY_PROTOCOL == 'sftp'
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          if [ -n "$DEPLOY_SSH_KEY" ]; then
+            printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+            chmod 600 ~/.ssh/deploy_key
+          fi
+
+      - name: Upload
+        env:
+          LFTP_PASSWORD: ${{ secrets.DEPLOY_PASSWORD }}
+        run: |
+          if [ "$DEPLOY_PROTOCOL" = "sftp" ]; then
+            port="${DEPLOY_PORT:-22}"
+            ssh_opts="ssh -a -x -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
+            if [ -f ~/.ssh/deploy_key ]; then
+              ssh_opts="$ssh_opts -o IdentitiesOnly=yes -i $HOME/.ssh/deploy_key"
+              auth=(-u "$DEPLOY_USER,")
+            else
+              auth=(-u "$DEPLOY_USER" --env-password)
+            fi
+            settings="set sftp:auto-confirm no; set sftp:connect-program \"$ssh_opts\""
+            url="sftp://$DEPLOY_HOST"
+          else
+            # Explicit FTPS: TLS is mandatory for login, listings and data,
+            # and the server certificate must be valid for DEPLOY_HOST.
+            port="${DEPLOY_PORT:-21}"
+            auth=(-u "$DEPLOY_USER" --env-password)
+            settings="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ftp:ssl-protect-list true; set ssl:verify-certificate true; set ftp:passive-mode true"
+            url="ftp://$DEPLOY_HOST"
+          fi
+          lftp "${auth[@]}" -p "$port" "$url" <<LFTP
+          set cmd:fail-exit yes
+          set net:max-retries 2
+          set net:timeout 20
+          $settings
+          mirror --reverse --verbose --only-newer --no-perms --exclude-glob .* _site/ "$DEPLOY_REMOTE_DIR"
+          bye
+          LFTP
+
+      - name: Clean up credentials
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
