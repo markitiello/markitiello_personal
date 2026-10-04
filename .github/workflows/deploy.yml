@@ -12,6 +12,11 @@ on:
       - "index.html"
       - ".github/workflows/deploy.yml"
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: connect and log in, list what would be uploaded, upload nothing"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -31,6 +36,7 @@ jobs:
       DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
       DEPLOY_REMOTE_DIR: ${{ secrets.DEPLOY_REMOTE_DIR }}
+      DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -109,12 +115,19 @@ jobs:
             settings="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ftp:ssl-protect-list true; set ssl:verify-certificate true; set ftp:passive-mode true"
             url="ftp://$DEPLOY_HOST"
           fi
+          mirror_opts="--reverse --verbose --only-newer --no-perms"
+          if [ "$DRY_RUN" = "true" ]; then
+            mirror_opts="$mirror_opts --dry-run"
+            echo "::notice::Dry run: nothing will be uploaded"
+          fi
           lftp "${auth[@]}" -p "$port" "$url" <<LFTP
           set cmd:fail-exit yes
           set net:max-retries 2
           set net:timeout 20
           $settings
-          mirror --reverse --verbose --only-newer --no-perms --exclude-glob .* _site/ "$DEPLOY_REMOTE_DIR"
+          # Force a real login and directory listing, so a dry run also checks credentials and TLS.
+          cls -1 > /dev/null
+          mirror $mirror_opts --exclude-glob .* _site/ "$DEPLOY_REMOTE_DIR"
           bye
           LFTP
 
